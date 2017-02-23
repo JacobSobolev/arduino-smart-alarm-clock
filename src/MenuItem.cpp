@@ -1,7 +1,7 @@
 #include "MenuItem.h"
 
-MenuItem::MenuItem(const char* menuName)
-: _menuName(menuName)
+MenuItem::MenuItem(const char* menuName, const int numberOfInputIterations)
+: _menuName(menuName), _numberOfInputIterations(numberOfInputIterations)
 {
 }
 
@@ -19,4 +19,10 @@ void MenuItem::printMenu()
 {
   Serial.print(_menuName);
   Serial.println();
+}
+
+
+const int MenuItem::getNumberOfInputIterations()
+{
+  return _numberOfInputIterations;
 }

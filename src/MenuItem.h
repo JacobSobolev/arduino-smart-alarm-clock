@@ -8,13 +8,15 @@
 class MenuItem {
   private:
     const char* _menuName;
+    const int _numberOfInputIterations;
     // voidNoArgsFuncPtrType _action;
 
   public:
-    MenuItem(const char* menuName);
+    MenuItem(const char* menuName, const int numberOfInputIterations);
     ~MenuItem();
     const char *getName();
     void printMenu();
+    const int getNumberOfInputIterations();
 
 };
 

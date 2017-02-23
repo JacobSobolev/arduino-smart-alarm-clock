@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <Wire.h>
-#include <DS1307.h>
+#include <DS3232RTC.h>    //http://github.com/JChristensen/DS3232RTC
+#include <Time.h>         //http://www.arduino.cc/playground/Code/Time
 #include <Menu.h>
 #include <ButtonsManager.h>
 #include <SoundManager.h>
@@ -22,25 +23,37 @@ private:
   const uint8_t _lcdNumOfRows;
   const int _menuSize;
   const int _timeToResetToDefualtMenu;
+  const int _menuNumberIterations1;
+  const int _menuNumberIterations2;
+  const int _menuNumberIterations3;
+  const char* _menuName1;
+  const char* _menuName2;
+  const char* _menuName3;
+
 
   int _timeFromLastInput;
   boolean _insideMenu;
   int _insideMenuIndex;
+  boolean _alarmTriggered;
+  boolean _alarmSet;
 
   LiquidCrystal* _lcd;
   Menu* _menu;
   ButtonsManager* _buttonsManager;
-  DS1307 _rtc;
   SoundManager* _soundManager;
+  tmElements_t _timeToSet;
+  tmElements_t _timeCurrent;
+  tmElements_t _timeToAlarm;
 
   void printRealTimeOnLcd();
   void printSetTimeOnLcd();
   void printSetAlarmOnLcd();
   void moveToNextIndexInsideMenu();
   void setBlinkCursor();
-  void setDataByMenu(uint8_t sec, uint8_t min, uint8_t hour, uint8_t day, uint8_t month, uint16_t year);
-  void decCurrentTimeField();
-  void incCurrentTimeField();
+  void preformMenuAction();
+  void decCurrentTimeField(tmElements_t &tm);
+  void incCurrentTimeField(tmElements_t &tm);
+  void printAlarmTriggeredOnLcd();
 
 public:
   AlarmClockManager();
@@ -49,6 +62,7 @@ public:
   void printCurrentMenu();
   void handleButtonsInput();
   void playAlarm();
+  void checkAlarm();
 
 };
 

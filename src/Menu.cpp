@@ -19,11 +19,11 @@ Menu::~Menu(){
   }
 }
 
-void Menu::addItemToMenu(int index, const char* menuName)
+void Menu::addItemToMenu(int index, const char* menuName, const int numberOfInputIterations)
 {
   if (index >= 0 && index < _menuSize)
   {
-    MenuItem* newItem= new MenuItem(menuName);
+    MenuItem* newItem= new MenuItem(menuName, numberOfInputIterations);
     _menuArr[index] = newItem;
   }
 }
@@ -79,4 +79,10 @@ boolean Menu::isOnDefualtMenu()
 int Menu::getCurrentIndex()
 {
     return _menuIndex;
+}
+
+const int Menu::getCurrentMenuIterations()
+{
+  MenuItem *item = _menuArr[_menuIndex];
+  return item->getNumberOfInputIterations();
 }

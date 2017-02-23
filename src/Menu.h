@@ -13,7 +13,7 @@ private:
 public:
   Menu(int);
   ~Menu();
-  void addItemToMenu(int index, const char* menuName);
+  void addItemToMenu(int index, const char* menuName, const int numberOfInputIterations);
   void addItemToMenu(int index, MenuItem* item);
   void printMenuAt(int index);
   void moveIndexUp();
@@ -22,6 +22,7 @@ public:
   void resetToDefualtMenu();
   boolean isOnDefualtMenu();
   int getCurrentIndex();
+  const int getCurrentMenuIterations();
 
 };
 
