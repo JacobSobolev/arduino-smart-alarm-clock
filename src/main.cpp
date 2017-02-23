@@ -5,7 +5,6 @@
 
 AlarmClockManager *alarmClockManager = new AlarmClockManager();
 Scheduler runner;
-SoundManager *soundManager = new SoundManager();;
 
 //
 void t1Callback();
@@ -25,25 +24,14 @@ void t2Callback() {
 }
 //
 void t3Callback() {
-  if (soundManager->_playMusic){
-      soundManager->playNext();
-  }
-  else{
-    Serial.print("finished");
-    t3.disable();
-  }
-
+  alarmClockManager->playAlarm();
 }
-//
 
 
 void setup()
 {
   alarmClockManager->init();
-  soundManager->init();
   Serial.begin(9600);
-
-
 
   runner.addTask(t1);
   runner.addTask(t2);
@@ -51,32 +39,9 @@ void setup()
   t1.enable();
   t2.enable();
   t3.enable();
-  soundManager->_playMusic = true;
-
-
-
 }
 int count = 1;
 
 void loop(){
   runner.execute();
-  // count ++;
-  // if (count % 100 == 0){
-  //
-  //   count = 1;
-  // }
-  // alarmClockManager->handleButtonsInput();
-  // alarmClockManager->printCurrentMenu();
-  // delay(25);
-  // Serial.println(count);
-
-
-  // Serial.print(soundManager->_index);
-  // if (soundManager->_playMusic)
-  // {
-  //   soundManager->playNext();
-  //   // runner.deleteTask(t3);
-  //   // t3.disable();
-  // }
-
 }

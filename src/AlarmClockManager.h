@@ -7,6 +7,7 @@
 #include <DS1307.h>
 #include <Menu.h>
 #include <ButtonsManager.h>
+#include <SoundManager.h>
 #include <eButtonPressLength.h>
 
 class AlarmClockManager {
@@ -23,13 +24,23 @@ private:
   const int _timeToResetToDefualtMenu;
 
   int _timeFromLastInput;
+  boolean _insideMenu;
+  int _insideMenuIndex;
 
   LiquidCrystal* _lcd;
   Menu* _menu;
   ButtonsManager* _buttonsManager;
   DS1307 _rtc;
+  SoundManager* _soundManager;
 
   void printRealTimeOnLcd();
+  void printSetTimeOnLcd();
+  void printSetAlarmOnLcd();
+  void moveToNextIndexInsideMenu();
+  void setBlinkCursor();
+  void setDataByMenu(uint8_t sec, uint8_t min, uint8_t hour, uint8_t day, uint8_t month, uint16_t year);
+  void decCurrentTimeField();
+  void incCurrentTimeField();
 
 public:
   AlarmClockManager();
@@ -37,6 +48,7 @@ public:
   void init();
   void printCurrentMenu();
   void handleButtonsInput();
+  void playAlarm();
 
 };
 

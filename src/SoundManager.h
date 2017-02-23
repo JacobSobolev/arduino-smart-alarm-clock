@@ -9,21 +9,26 @@
 class SoundManager {
   private:
     const int _buzzerPinNumber;
+    const int _startIndexPhase1;
+    const int _startIndexPhase3;
+    const int _delayLoop1;
+    const int _delayLoop2;
+    const int _delayBetween;
 
-    int _delayLoop1;
-    int _delayLoop2;
-    int _delayBetween();
-
-    int _delayCounter;
-    boolean _playedTone;
-
-  public:
     int _index ;
     boolean _playMusic;
+    int _delayCounter;
+    boolean _playedTone;
+    int _phase;
+
+  public:
+
     SoundManager();
     ~SoundManager();
     void init();
     void playNext();
+    void setPlayMusic(boolean play);
+    boolean getPlayMusic();
 
 };
 
