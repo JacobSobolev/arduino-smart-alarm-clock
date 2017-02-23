@@ -1,5 +1,5 @@
 #include "ButtonsManager.h"
-#include "ButtonHandler.h"
+
 
 ButtonsManager::ButtonsManager()
 : defaultLongPressDuration(25), numberOfButtons(3),
@@ -9,10 +9,7 @@ buttonArr({ButtonHandler(defaultButtonPinNumber1,defaultLongPressDuration,defaul
           ButtonHandler(defaultButtonPinNumber2,defaultLongPressDuration,defaultButtonName2),
           ButtonHandler(defaultButtonPinNumber3,defaultLongPressDuration,defaultButtonName3)})
 {
-
 }
-
-
 
 void ButtonsManager::initAll()
 {
@@ -27,7 +24,6 @@ void ButtonsManager::handleAll()
     buttonArr[i].handle();
   }
 }
-
 
 void ButtonsManager::printEventsToSerial()
 {
@@ -50,5 +46,9 @@ void ButtonsManager::printEventsToSerial()
   {
     Serial.println();
   }
+}
 
+eButtonPressLength ButtonsManager::getButtonLastEvent(int index)
+{
+  return buttonArr[index].getLastEvent();
 }
