@@ -37,23 +37,7 @@ void AlarmClockManager::init()
   _lcd->begin(_lcdNumOfCols, _lcdNumOfRows);
   _buttonsManager->initAll();
   _soundManager->init();
-  // setTime(14, 34, 0, 23, 2, 2017);
-  // RTC.set(now());
-  // _rtc.start();
   setSyncProvider(RTC.get);
-  // RTC.alarmInterrupt(13, true);
-  // RTC.setAlarm(ALM1_MATCH_DATE, 0, 1, 1);
-  // if(timeStatus() != timeSet)
-  // {
-  //   Serial.println("Unable to sync with the RTC");
-  //
-  //
-  // }
-  // else
-  // {
-  //   Serial.println("RTC has set the system time");
-  // }
-
   byte bellChar[8] = {
     0b00100,
     0b01010,
@@ -150,7 +134,6 @@ void AlarmClockManager::handleButtonsInput()
           incCurrentTimeField(_timeToAlarm);
         }
       }
-      // Serial.print(1);
     }
     else if (_buttonsManager->getButtonLastEvent(1)  == eButtonPressLength::pressShort){
       if (!_insideMenu)
@@ -169,17 +152,8 @@ void AlarmClockManager::handleButtonsInput()
           decCurrentTimeField(_timeToAlarm);
         }
       }
-      // Serial.print(2);
     }
     else if (_buttonsManager->getButtonLastEvent(2)  == eButtonPressLength::pressShort){
-      //TODO : action
-      // Serial.println("was pressed");
-      // if (_soundManager->getPlayMusic()){
-      //   _soundManager->setPlayMusic(false);
-      // }
-      // else{
-      //   _soundManager->setPlayMusic(true);
-      // }
       if (_menu->getCurrentIndex() == 1){
         if (!_insideMenu){
           _insideMenu = true;
@@ -204,11 +178,9 @@ void AlarmClockManager::handleButtonsInput()
           moveToNextIndexInsideMenu();
         }
       }
-      // Serial.print(3);
     }
     else
     {
-      // Serial.print(".");
       if (_timeFromLastInput >= _timeToResetToDefualtMenu && !_menu->isOnDefualtMenu() && !_insideMenu){
         _menu->resetToDefualtMenu();
         _lcd->clear();
@@ -232,7 +204,6 @@ void AlarmClockManager::handleButtonsInput()
 
 void AlarmClockManager::printRealTimeOnLcd()
 {
-  // Serial.println(timeStatus());
   if(timeStatus() == timeSet) {
     if (_alarmSet){
 
@@ -291,6 +262,14 @@ void AlarmClockManager::printSetAlarmOnLcd()
   }
 }
 
+void AlarmClockManager::printAlarmTriggeredOnLcd()
+{
+  _lcd->setCursor(6,0);
+  _lcd->print("Alarm");
+  _lcd->setCursor(5,1);
+  _lcd->print("Wake Up");
+}
+
 void AlarmClockManager::moveToNextIndexInsideMenu()
 {
   if(_insideMenuIndex < _menu->getCurrentMenuIterations() - 1) {
@@ -335,10 +314,10 @@ void AlarmClockManager::preformMenuAction()
       time_t t = makeTime(_timeToSet);
       setTime(t);
       RTC.set(t);
+      _alarmSet = false;
     }
     else if (_menu->getCurrentIndex() == 2){
       _alarmSet = true;
-      // Serial.println("alarm set");
       Serial.println(_timeToAlarm.Hour);
       Serial.println(_timeToAlarm.Minute);
       Serial.println(_timeToAlarm.Second);
@@ -384,18 +363,13 @@ void AlarmClockManager::incCurrentTimeField(tmElements_t &tm)
   }
   else if (_insideMenuIndex == 4){
     tm.Month ++;
-    // month++;
     if (tm.Month == 13){
       tm.Month = 1;
     }
   }
   else if (_insideMenuIndex == 5){
     tm.Year ++;
-    // year++;
   }
-  //
-  // setDataByMenu();
-
 }
 
 void AlarmClockManager::decCurrentTimeField(tmElements_t &tm)
@@ -464,8 +438,6 @@ void AlarmClockManager::decCurrentTimeField(tmElements_t &tm)
   else if (_insideMenuIndex == 5){
     tm.Year--;
   }
-
-  // setDataByMenu();
 }
 
 
@@ -476,9 +448,7 @@ void AlarmClockManager::playAlarm()
 
 void AlarmClockManager::checkAlarm()
 {
-  if ( _alarmSet && !_alarmTriggered ) {     //has Alarm1 triggered?
-    //yes, act on the alarm
-    // Serial.print("checking alarm");
+  if ( _alarmSet && !_alarmTriggered ) {
     if (_timeCurrent.Hour == _timeToAlarm.Hour &&
       _timeCurrent.Minute == _timeToAlarm.Minute &&
       _timeCurrent.Second >= _timeToAlarm.Second)
@@ -487,20 +457,6 @@ void AlarmClockManager::checkAlarm()
       _soundManager->setPlayMusic(true);
       _alarmTriggered = true;
       _alarmSet = false;
-      Serial.println("alarm");
-
     }
   }
-  else {
-      //no alarm
-      // Serial.println(".");
-  }
-}
-
-void AlarmClockManager::printAlarmTriggeredOnLcd()
-{
-  _lcd->setCursor(6,0);
-  _lcd->print("Alarm");
-  _lcd->setCursor(5,1);
-  _lcd->print("Wake Up");
 }

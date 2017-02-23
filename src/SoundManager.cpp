@@ -21,8 +21,6 @@ void SoundManager::init()
 
 void SoundManager::playNext()
 {
-  // Serial.println(_index);
-
   if (_playMusic){
     if (_phase == 0){
       if (_index < 800){
@@ -79,7 +77,6 @@ void SoundManager::playNext()
       _phase = 0;
       _index = _startIndexPhase1;
       _playedTone = false;
-      // noTone(_buzzerPinNumber);
     }
   }
   else {

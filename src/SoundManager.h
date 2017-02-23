@@ -1,10 +1,7 @@
 #ifndef SOUND_MANAGER
 #define SOUND_MANAGER
 
-
-
 #include <Arduino.h>
-#include <MusicalNotes.h>
 
 class SoundManager {
   private:

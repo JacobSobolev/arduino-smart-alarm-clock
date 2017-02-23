@@ -7,47 +7,47 @@ AlarmClockManager *alarmClockManager = new AlarmClockManager();
 Scheduler runner;
 
 //
-void t1Callback();
-void t2Callback();
-void t3Callback();
-void t4Callback();
+void handleInputCallback();
+void printOnLcdCallback();
+void checkAlarmCallback();
+void playAlarmCallback();
 //
-Task t1(100, TASK_FOREVER, &t1Callback);
-Task t2(100, TASK_FOREVER, &t2Callback);
-Task t3(1, TASK_FOREVER, &t3Callback);
-Task t4(1, TASK_FOREVER, &t4Callback);
+Task handleInputTask(100, TASK_FOREVER, &handleInputCallback);
+Task printOnLcdTask(100, TASK_FOREVER, &printOnLcdCallback);
+Task checkAlarmTask(1, TASK_FOREVER, &checkAlarmCallback);
+Task playAlarmTask(1, TASK_FOREVER, &playAlarmCallback);
 //
-void t1Callback() {
+void handleInputCallback() {
   alarmClockManager->handleButtonsInput();
 }
 
-void t2Callback() {
+void printOnLcdCallback() {
   alarmClockManager->printCurrentMenu();
 }
 //
-void t3Callback() {
+void checkAlarmCallback() {
+  alarmClockManager->checkAlarm();
+}
+
+void playAlarmCallback() {
   alarmClockManager->playAlarm();
 }
 
-void t4Callback() {
-  alarmClockManager->checkAlarm();
-}
+
 
 void setup()
 {
   alarmClockManager->init();
-  Serial.begin(9600);
 
-  runner.addTask(t1);
-  runner.addTask(t2);
-  runner.addTask(t3);
-  runner.addTask(t4);
-  t1.enable();
-  t2.enable();
-  t3.enable();
-  t4.enable();
+  runner.addTask(handleInputTask);
+  runner.addTask(printOnLcdTask);
+  runner.addTask(checkAlarmTask);
+  runner.addTask(playAlarmTask);
+  handleInputTask.enable();
+  printOnLcdTask.enable();
+  checkAlarmTask.enable();
+  playAlarmTask.enable();
 }
-int count = 1;
 
 void loop(){
   runner.execute();
