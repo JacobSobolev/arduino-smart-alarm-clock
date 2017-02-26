@@ -2,9 +2,7 @@
 
 
 AlarmClockManager::AlarmClockManager()
-: _lcdPinNumber1(7), _lcdPinNumber2(6), _lcdPinNumber3(5),
-_lcdPinNumber4(4), _lcdPinNumber5(3), _lcdPinNumber6(2),
-_lcdNumOfCols(16), _lcdNumOfRows(2), _menuSize(3), _timeToResetToDefualtMenu(50),
+: _menuSize(3), _timeToResetToDefualtMenu(50),
 _menuNumberIterations1(0), _menuNumberIterations2(6), _menuNumberIterations3(3),
 _menuName1("Menu 1"), _menuName2("Set Time"), _menuName3("Set Alarm")
 
@@ -15,8 +13,7 @@ _menuName1("Menu 1"), _menuName2("Set Time"), _menuName3("Set Alarm")
   _alarmTriggered = false;
   _alarmSet = false;
 
-  _lcd = new LiquidCrystal(_lcdPinNumber1, _lcdPinNumber2, _lcdPinNumber3,
-  _lcdPinNumber4, _lcdPinNumber5, _lcdPinNumber6);
+  _lcdManager = new LcdManager();
 
   _menu = new Menu(_menuSize);
   _menu->addItemToMenu(0, _menuName1, _menuNumberIterations1);
@@ -34,45 +31,10 @@ AlarmClockManager::~AlarmClockManager()
 
 void AlarmClockManager::init()
 {
-  _lcd->begin(_lcdNumOfCols, _lcdNumOfRows);
   _buttonsManager->initAll();
   _soundManager->init();
+  _lcdManager->init();
   setSyncProvider(RTC.get);
-  byte bellChar[8] = {
-    0b00100,
-    0b01010,
-    0b01010,
-    0b01010,
-    0b01010,
-    0b11111,
-    0b00000,
-    0b00100
-  };
-  byte rightSignChar[8] = {
-  	0b10000,
-  	0b11000,
-  	0b11100,
-  	0b11110,
-  	0b11110,
-  	0b11100,
-  	0b11000,
-  	0b10000
-  };
-
-  byte leftSignChar[8] = {
-  	0b00001,
-  	0b00011,
-  	0b00111,
-  	0b01111,
-  	0b01111,
-  	0b00111,
-  	0b00011,
-  	0b00001
-  };
-  _lcd->createChar(0, bellChar);
-  _lcd->createChar(1, rightSignChar);
-  _lcd->createChar(2, leftSignChar);
-
 
 }
 
@@ -81,33 +43,33 @@ void AlarmClockManager::printCurrentMenu()
 
   if (!_alarmTriggered){
     if (_menu->getCurrentIndex() == 0){
-      printRealTimeOnLcd();
-
+      if(timeStatus() == timeSet) {
+        breakTime(now(),_timeCurrent);
+        _lcdManager->printRealTimeOnLcd(_timeCurrent,_alarmSet);
+      }
     } else {
       if (_insideMenu){
           if (_menu->getCurrentIndex() == 1){
-            printSetTimeOnLcd();
+            // printSetTimeOnLcd();
+            if(timeStatus() == timeSet) {
+              _lcdManager->printInsideMenuWithClock(_timeToSet,"Set","Time", _insideMenuIndex);
+            }
           }
           else if (_menu->getCurrentIndex() == 2){
-            printSetAlarmOnLcd();
+            if(timeStatus() == timeSet) {
+              _lcdManager->printInsideMenuWithClock(_timeToAlarm,"Set","Alarm",  _insideMenuIndex);
+            }
           }
       }
       else{
-        _lcd->setCursor(6,0);
-        _lcd->print("MENU");
         const char* menuStr = _menu->getCurrentMenu()->getName();
-        _lcd->setCursor(4,1);
-        _lcd->print(menuStr);
-        _lcd->setCursor(15,1);
-       _lcd->write(byte(1));
-       _lcd->setCursor(0,1);
-       _lcd->write(byte(2));
+        _lcdManager->printMenuTextOnLcd(menuStr);
       }
     }
   }
   else
   {
-    printAlarmTriggeredOnLcd();
+    _lcdManager->printAlarmTriggeredOnLcd();
   }
 
 }
@@ -122,7 +84,7 @@ void AlarmClockManager::handleButtonsInput()
         _menu->moveIndexUp();
         _timeFromLastInput = 0;
 
-        _lcd->clear();
+        _lcdManager->clearLcd();
       }
       else
       {
@@ -140,7 +102,7 @@ void AlarmClockManager::handleButtonsInput()
       {
         _menu->moveIndexDown();
         _timeFromLastInput = 0;
-        _lcd->clear();
+        _lcdManager->clearLcd();
       }
       else
       {
@@ -159,8 +121,8 @@ void AlarmClockManager::handleButtonsInput()
           _insideMenu = true;
           _insideMenuIndex = 0;
           breakTime(now(), _timeToSet);
-          _lcd->clear();
-          _lcd->blink();
+          _lcdManager->clearLcd();
+          _lcdManager->setBlink(true);
         }
         else {
           moveToNextIndexInsideMenu();
@@ -171,8 +133,8 @@ void AlarmClockManager::handleButtonsInput()
           _insideMenu = true;
           _insideMenuIndex = 0;
           breakTime(now(), _timeToAlarm);
-          _lcd->clear();
-          _lcd->blink();
+          _lcdManager->clearLcd();
+          _lcdManager->setBlink(true);
         }
         else {
           moveToNextIndexInsideMenu();
@@ -183,7 +145,7 @@ void AlarmClockManager::handleButtonsInput()
     {
       if (_timeFromLastInput >= _timeToResetToDefualtMenu && !_menu->isOnDefualtMenu() && !_insideMenu){
         _menu->resetToDefualtMenu();
-        _lcd->clear();
+        _lcdManager->clearLcd();
       } else if (!_insideMenu){
         _timeFromLastInput ++;
       }
@@ -194,7 +156,7 @@ void AlarmClockManager::handleButtonsInput()
     if(_buttonsManager->getButtonLastEvent(0) == eButtonPressLength::pressShort ||
       _buttonsManager->getButtonLastEvent(1) == eButtonPressLength::pressShort ||
       _buttonsManager->getButtonLastEvent(2) == eButtonPressLength::pressShort){
-      _lcd->clear();
+      _lcdManager->clearLcd();
       _alarmTriggered = false;
       _soundManager->setPlayMusic(false);
     }
@@ -202,73 +164,7 @@ void AlarmClockManager::handleButtonsInput()
 
 }
 
-void AlarmClockManager::printRealTimeOnLcd()
-{
-  if(timeStatus() == timeSet) {
-    if (_alarmSet){
 
-      _lcd->setCursor(0,0);
-      _lcd->write(byte(0));
-    }
-    breakTime(now(),_timeCurrent);
-    char* msg = new char[17];
-    _lcd->setCursor(4,0);
-    sprintf(msg,"%2d:%02d:%02d",_timeCurrent.Hour,_timeCurrent.Minute,_timeCurrent.Second);
-    _lcd->print(msg);
-    _lcd->setCursor(3,1);
-    sprintf(msg,"%2d/%02d/%02d",_timeCurrent.Day,_timeCurrent.Month,_timeCurrent.Year + 1970);
-    _lcd->print(msg);
-
-    delete []msg;
-  }
-
-
-}
-
-void AlarmClockManager::printSetTimeOnLcd()
-{
-  if(timeStatus() == timeSet) {
-
-    char* msg = new char[17];
-    _lcd->setCursor(0,0);
-    _lcd->print("Set");
-    _lcd->setCursor(6,0);
-    sprintf(msg,"%2d:%02d:%02d",_timeToSet.Hour,_timeToSet.Minute,_timeToSet.Second);
-    _lcd->print(msg);
-    _lcd->setCursor(0,1);
-    _lcd->print("Time");
-    _lcd->setCursor(6,1);
-    sprintf(msg,"%2d/%02d/%02d",_timeToSet.Day,_timeToSet.Month,_timeToSet.Year + 1970);
-    _lcd->print(msg);
-    setBlinkCursor();
-    delete []msg;
-  }
-}
-
-void AlarmClockManager::printSetAlarmOnLcd()
-{
-
-  if(timeStatus() == timeSet) {
-    char* msg = new char[17];
-    _lcd->setCursor(0,0);
-    _lcd->print("Set");
-    _lcd->setCursor(6,0);
-    sprintf(msg,"%2d:%02d:%02d",_timeToAlarm.Hour,_timeToAlarm.Minute,_timeToAlarm.Second);
-    _lcd->print(msg);
-    _lcd->setCursor(0,1);
-    _lcd->print("Alarm");
-    setBlinkCursor();
-    delete []msg;
-  }
-}
-
-void AlarmClockManager::printAlarmTriggeredOnLcd()
-{
-  _lcd->setCursor(6,0);
-  _lcd->print("Alarm");
-  _lcd->setCursor(5,1);
-  _lcd->print("Wake Up");
-}
 
 void AlarmClockManager::moveToNextIndexInsideMenu()
 {
@@ -279,34 +175,13 @@ void AlarmClockManager::moveToNextIndexInsideMenu()
   {
     preformMenuAction();
     _insideMenu = false;
-    _lcd->noBlink();
-    _lcd->clear();
+    _lcdManager->setBlink(false);
+    _lcdManager->clearLcd();
     _menu->resetToDefualtMenu();
 
   }
 }
 
-void AlarmClockManager::setBlinkCursor()
-{
-  if (_insideMenuIndex == 0){
-    _lcd->setCursor(7,0);
-  }
-  else if (_insideMenuIndex == 1){
-    _lcd->setCursor(10,0);
-  }
-  else if (_insideMenuIndex == 2){
-    _lcd->setCursor(13,0);
-  }
-  else if (_insideMenuIndex == 3){
-    _lcd->setCursor(7,1);
-  }
-  else if (_insideMenuIndex == 4){
-    _lcd->setCursor(10,1);
-  }
-  else if (_insideMenuIndex == 5){
-    _lcd->setCursor(15,1);
-  }
-}
 
 void AlarmClockManager::preformMenuAction()
 {
@@ -318,9 +193,6 @@ void AlarmClockManager::preformMenuAction()
     }
     else if (_menu->getCurrentIndex() == 2){
       _alarmSet = true;
-      Serial.println(_timeToAlarm.Hour);
-      Serial.println(_timeToAlarm.Minute);
-      Serial.println(_timeToAlarm.Second);
     }
 }
 
@@ -453,7 +325,7 @@ void AlarmClockManager::checkAlarm()
       _timeCurrent.Minute == _timeToAlarm.Minute &&
       _timeCurrent.Second >= _timeToAlarm.Second)
     {
-      _lcd->clear();
+      _lcdManager->clearLcd();
       _soundManager->setPlayMusic(true);
       _alarmTriggered = true;
       _alarmSet = false;

@@ -2,7 +2,6 @@
 #define ALARM_CLOCK_MANAGER
 
 #include <Arduino.h>
-#include <LiquidCrystal.h>
 #include <Wire.h>
 #include <DS3232RTC.h>    //http://github.com/JChristensen/DS3232RTC
 #include <Time.h>         //http://www.arduino.cc/playground/Code/Time
@@ -10,17 +9,10 @@
 #include <ButtonsManager.h>
 #include <SoundManager.h>
 #include <eButtonPressLength.h>
+#include <LcdManager.h>
 
 class AlarmClockManager {
 private:
-  const uint8_t _lcdPinNumber1;
-  const uint8_t _lcdPinNumber2;
-  const uint8_t _lcdPinNumber3;
-  const uint8_t _lcdPinNumber4;
-  const uint8_t _lcdPinNumber5;
-  const uint8_t _lcdPinNumber6;
-  const uint8_t _lcdNumOfCols;
-  const uint8_t _lcdNumOfRows;
   const int _menuSize;
   const int _timeToResetToDefualtMenu;
   const int _menuNumberIterations1;
@@ -37,19 +29,15 @@ private:
   boolean _alarmTriggered;
   boolean _alarmSet;
 
-  LiquidCrystal* _lcd;
   Menu* _menu;
   ButtonsManager* _buttonsManager;
   SoundManager* _soundManager;
+  LcdManager* _lcdManager;
   tmElements_t _timeToSet;
   tmElements_t _timeCurrent;
   tmElements_t _timeToAlarm;
 
-  void printRealTimeOnLcd();
-  void printSetTimeOnLcd();
-  void printSetAlarmOnLcd();
   void moveToNextIndexInsideMenu();
-  void setBlinkCursor();
   void preformMenuAction();
   void decCurrentTimeField(tmElements_t &tm);
   void incCurrentTimeField(tmElements_t &tm);
