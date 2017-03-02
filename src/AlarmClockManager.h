@@ -10,6 +10,9 @@
 #include <SoundManager.h>
 #include <eButtonPressLength.h>
 #include <LcdManager.h>
+#include <Clock.h>
+#include <eClockElementType.h>
+#include <eTmElementType.h>
 
 class AlarmClockManager {
 private:
@@ -33,15 +36,15 @@ private:
   ButtonsManager* _buttonsManager;
   SoundManager* _soundManager;
   LcdManager* _lcdManager;
-  tmElements_t _timeToSet;
-  tmElements_t _timeCurrent;
-  tmElements_t _timeToAlarm;
+  Clock* _clock;
+  // tmElements_t _timeToSet;
+  // tmElements_t _timeCurrent;
+  // tmElements_t _timeToAlarm;
 
   void moveToNextIndexInsideMenu();
   void preformMenuAction();
-  void decCurrentTimeField(tmElements_t &tm);
-  void incCurrentTimeField(tmElements_t &tm);
-  void printAlarmTriggeredOnLcd();
+  // void decCurrentTimeField(tmElements_t &tm);
+  // void incCurrentTimeField(tmElements_t &tm);
 
 public:
   AlarmClockManager();

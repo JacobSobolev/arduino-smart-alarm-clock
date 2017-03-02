@@ -23,6 +23,7 @@ _menuName1("Menu 1"), _menuName2("Set Time"), _menuName3("Set Alarm")
   _buttonsManager = new ButtonsManager();
 
   _soundManager = new SoundManager();
+  _clock = new Clock();
 }
 
 AlarmClockManager::~AlarmClockManager()
@@ -44,20 +45,23 @@ void AlarmClockManager::printCurrentMenu()
   if (!_alarmTriggered){
     if (_menu->getCurrentIndex() == 0){
       if(timeStatus() == timeSet) {
-        breakTime(now(),_timeCurrent);
-        _lcdManager->printRealTimeOnLcd(_timeCurrent,_alarmSet);
+        _clock->setTimeElement(now(), eClockElementType::currentTime);
+        tmElements_t tm = _clock->getTimeElement(eClockElementType::currentTime);
+        _lcdManager->printRealTimeOnLcd(tm, _alarmSet);
       }
     } else {
       if (_insideMenu){
           if (_menu->getCurrentIndex() == 1){
             // printSetTimeOnLcd();
             if(timeStatus() == timeSet) {
-              _lcdManager->printInsideMenuWithClock(_timeToSet,"Set","Time", _insideMenuIndex);
+              tmElements_t tm = _clock->getTimeElement(eClockElementType::timeToSet);
+              _lcdManager->printInsideMenuWithClock(tm,"Set","Time", _insideMenuIndex);
             }
           }
           else if (_menu->getCurrentIndex() == 2){
             if(timeStatus() == timeSet) {
-              _lcdManager->printInsideMenuWithClock(_timeToAlarm,"Set","Alarm",  _insideMenuIndex);
+              tmElements_t tm = _clock->getTimeElement(eClockElementType::timeToSet);
+              _lcdManager->printInsideMenuWithClock(tm, "Set","Alarm",  _insideMenuIndex);
             }
           }
       }
@@ -90,10 +94,12 @@ void AlarmClockManager::handleButtonsInput()
       {
         if (_menu->getCurrentIndex() == 1)
         {
-          incCurrentTimeField(_timeToSet);
+          // incCurrentTimeField(_timeToSet);
+          _clock->dtCurrentTimeField(1, eClockElementType::timeToSet, eTmElementType elementTime);
         } else if (_menu->getCurrentIndex() == 2)
         {
-          incCurrentTimeField(_timeToAlarm);
+          // incCurrentTimeField(_timeToAlarm);
+          _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, eTmElementType elementTime);
         }
       }
     }
@@ -133,6 +139,7 @@ void AlarmClockManager::handleButtonsInput()
           _insideMenu = true;
           _insideMenuIndex = 0;
           breakTime(now(), _timeToAlarm);
+
           _lcdManager->clearLcd();
           _lcdManager->setBlink(true);
         }
@@ -196,122 +203,122 @@ void AlarmClockManager::preformMenuAction()
     }
 }
 
-void AlarmClockManager::incCurrentTimeField(tmElements_t &tm)
-{
-  if (_insideMenuIndex == 0){
-    tm.Hour ++;
-    if (tm.Hour  == 24){
-      tm.Hour = 0;
-    }
-  }
-  else if (_insideMenuIndex == 1){
-    tm.Minute ++;
-    if (tm.Minute == 60){
-      tm.Minute = 0;
-    }
-  }
-  else if (_insideMenuIndex == 2){
-    tm.Second ++;
-    if (tm.Second == 60){
-      tm.Second = 0;
-    }
-  }
-  else if (_insideMenuIndex == 3){
-    tm.Day ++;
-    if (tm.Month == 2){
-      if (tm.Year % 4 == 0 && tm.Day  == 30){
-        tm.Day = 1;
-      }
-      else if (tm.Day  == 29){
-        tm.Day = 1;
-      }
-    }
-    else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
-    && tm.Day  == 31){
-      tm.Day = 1;
-    } else if ( tm.Day == 32){
-      tm.Day = 1;
-    }
-  }
-  else if (_insideMenuIndex == 4){
-    tm.Month ++;
-    if (tm.Month == 13){
-      tm.Month = 1;
-    }
-  }
-  else if (_insideMenuIndex == 5){
-    tm.Year ++;
-  }
-}
-
-void AlarmClockManager::decCurrentTimeField(tmElements_t &tm)
-{
-
-  if (_insideMenuIndex == 0){
-    if (tm.Hour  == 0){
-      tm.Hour = 23;
-    }
-    else
-    {
-      tm.Hour --;
-    }
-  }
-  else if (_insideMenuIndex == 1){
-
-    if (tm.Minute == 0){
-      tm.Minute = 59;
-    }
-    else
-    {
-      tm.Minute --;
-    }
-  }
-  else if (_insideMenuIndex == 2){
-
-    if (tm.Second == 0){
-      tm.Second = 59;
-    }
-    else
-    {
-      tm.Second --;
-    }
-  }
-  else if (_insideMenuIndex == 3){
-    if (tm.Month == 2){
-      if (tm.Year % 4 == 0 && tm.Day == 1){
-        tm.Day = 29;
-      }
-      else if (tm.Day  == 1){
-        tm.Day = 28;
-      }
-      else{
-        tm.Day --;
-      }
-    }
-    else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
-    && tm.Day  == 1){
-      tm.Day = 30;
-    } else if ( tm.Day == 1){
-      tm.Day = 31;
-    }
-    else{
-      tm.Day --;
-    }
-  }
-  else if (_insideMenuIndex == 4){
-    if (tm.Month == 1){
-      tm.Month = 12;
-    }
-    else
-    {
-      tm.Month --;
-    }
-  }
-  else if (_insideMenuIndex == 5){
-    tm.Year--;
-  }
-}
-
+// void AlarmClockManager::incCurrentTimeField(tmElements_t &tm)
+// {
+//   if (_insideMenuIndex == 0){
+//     tm.Hour ++;
+//     if (tm.Hour  == 24){
+//       tm.Hour = 0;
+//     }
+//   }
+//   else if (_insideMenuIndex == 1){
+//     tm.Minute ++;
+//     if (tm.Minute == 60){
+//       tm.Minute = 0;
+//     }
+//   }
+//   else if (_insideMenuIndex == 2){
+//     tm.Second ++;
+//     if (tm.Second == 60){
+//       tm.Second = 0;
+//     }
+//   }
+//   else if (_insideMenuIndex == 3){
+//     tm.Day ++;
+//     if (tm.Month == 2){
+//       if (tm.Year % 4 == 0 && tm.Day  == 30){
+//         tm.Day = 1;
+//       }
+//       else if (tm.Day  == 29){
+//         tm.Day = 1;
+//       }
+//     }
+//     else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
+//     && tm.Day  == 31){
+//       tm.Day = 1;
+//     } else if ( tm.Day == 32){
+//       tm.Day = 1;
+//     }
+//   }
+//   else if (_insideMenuIndex == 4){
+//     tm.Month ++;
+//     if (tm.Month == 13){
+//       tm.Month = 1;
+//     }
+//   }
+//   else if (_insideMenuIndex == 5){
+//     tm.Year ++;
+//   }
+// }
+//
+// void AlarmClockManager::decCurrentTimeField(tmElements_t &tm)
+// {
+//
+//   if (_insideMenuIndex == 0){
+//     if (tm.Hour  == 0){
+//       tm.Hour = 23;
+//     }
+//     else
+//     {
+//       tm.Hour --;
+//     }
+//   }
+//   else if (_insideMenuIndex == 1){
+//
+//     if (tm.Minute == 0){
+//       tm.Minute = 59;
+//     }
+//     else
+//     {
+//       tm.Minute --;
+//     }
+//   }
+//   else if (_insideMenuIndex == 2){
+//
+//     if (tm.Second == 0){
+//       tm.Second = 59;
+//     }
+//     else
+//     {
+//       tm.Second --;
+//     }
+//   }
+//   else if (_insideMenuIndex == 3){
+//     if (tm.Month == 2){
+//       if (tm.Year % 4 == 0 && tm.Day == 1){
+//         tm.Day = 29;
+//       }
+//       else if (tm.Day  == 1){
+//         tm.Day = 28;
+//       }
+//       else{
+//         tm.Day --;
+//       }
+//     }
+//     else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
+//     && tm.Day  == 1){
+//       tm.Day = 30;
+//     } else if ( tm.Day == 1){
+//       tm.Day = 31;
+//     }
+//     else{
+//       tm.Day --;
+//     }
+//   }
+//   else if (_insideMenuIndex == 4){
+//     if (tm.Month == 1){
+//       tm.Month = 12;
+//     }
+//     else
+//     {
+//       tm.Month --;
+//     }
+//   }
+//   else if (_insideMenuIndex == 5){
+//     tm.Year--;
+//   }
+// }
+//
 
 void AlarmClockManager::playAlarm()
 {
