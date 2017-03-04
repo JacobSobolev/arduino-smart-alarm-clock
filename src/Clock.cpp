@@ -119,3 +119,9 @@ void Clock::dtCurrentTimeField(int dt, eClockElementType elementClock, eTmElemen
     tm.Year += dt;
   }
 }
+
+void Clock::setSystemRtcTime(){
+  time_t t = makeTime(_timeToSet);
+  setTime(t);
+  RTC.set(t);
+}

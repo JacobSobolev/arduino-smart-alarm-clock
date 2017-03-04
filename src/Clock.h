@@ -20,6 +20,7 @@ class Clock{
     void setTimeElement(time_t time, eClockElementType elementClock);
     tmElements_t getTimeElement(eClockElementType elementClock);
     void dtCurrentTimeField(int dt, eClockElementType elementClock, eTmElementType elementTime);
+    void setSystemRtcTime();
 };
 
 #endif

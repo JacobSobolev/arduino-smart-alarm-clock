@@ -95,11 +95,12 @@ void AlarmClockManager::handleButtonsInput()
         if (_menu->getCurrentIndex() == 1)
         {
           // incCurrentTimeField(_timeToSet);
-          _clock->dtCurrentTimeField(1, eClockElementType::timeToSet, eTmElementType elementTime);
+          _clock->dtCurrentTimeField(1, eClockElementType::timeToSet, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         } else if (_menu->getCurrentIndex() == 2)
         {
           // incCurrentTimeField(_timeToAlarm);
-          _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, eTmElementType elementTime);
+          // _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, eTmElementType elementTime);
+          _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         }
       }
     }
@@ -114,10 +115,12 @@ void AlarmClockManager::handleButtonsInput()
       {
         if (_menu->getCurrentIndex() == 1)
         {
-          decCurrentTimeField(_timeToSet);
+          // decCurrentTimeField(_timeToSet);
+          _clock->dtCurrentTimeField(-1, eClockElementType::timeToSet, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         } else if (_menu->getCurrentIndex() == 2)
         {
-          decCurrentTimeField(_timeToAlarm);
+          // decCurrentTimeField(_timeToAlarm);
+          _clock->dtCurrentTimeField(-1, eClockElementType::timeToAlarm, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         }
       }
     }
@@ -126,7 +129,8 @@ void AlarmClockManager::handleButtonsInput()
         if (!_insideMenu){
           _insideMenu = true;
           _insideMenuIndex = 0;
-          breakTime(now(), _timeToSet);
+          // breakTime(now(), _timeToSet);
+          _clock->setTimeElement(now(), eClockElementType::timeToSet);
           _lcdManager->clearLcd();
           _lcdManager->setBlink(true);
         }
@@ -138,8 +142,8 @@ void AlarmClockManager::handleButtonsInput()
         if (!_insideMenu){
           _insideMenu = true;
           _insideMenuIndex = 0;
-          breakTime(now(), _timeToAlarm);
-
+          // breakTime(now(), _timeToAlarm);
+          _clock->setTimeElement(now(), eClockElementType::timeToAlarm);
           _lcdManager->clearLcd();
           _lcdManager->setBlink(true);
         }
@@ -193,9 +197,7 @@ void AlarmClockManager::moveToNextIndexInsideMenu()
 void AlarmClockManager::preformMenuAction()
 {
     if (_menu->getCurrentIndex() == 1){
-      time_t t = makeTime(_timeToSet);
-      setTime(t);
-      RTC.set(t);
+      _clock->setSystemRtcTime();
       _alarmSet = false;
     }
     else if (_menu->getCurrentIndex() == 2){
@@ -328,9 +330,11 @@ void AlarmClockManager::playAlarm()
 void AlarmClockManager::checkAlarm()
 {
   if ( _alarmSet && !_alarmTriggered ) {
-    if (_timeCurrent.Hour == _timeToAlarm.Hour &&
-      _timeCurrent.Minute == _timeToAlarm.Minute &&
-      _timeCurrent.Second >= _timeToAlarm.Second)
+    tmElements_t tmCurrentTime = _clock->getTimeElement(eClockElementType::currentTime);
+    tmElements_t tmAlarmTime = _clock->getTimeElement(eClockElementType::timeToAlarm);
+    if (tmCurrentTime.Hour == tmAlarmTime.Hour &&
+      tmCurrentTime.Minute == tmAlarmTime.Minute &&
+      tmCurrentTime.Second >= tmAlarmTime.Second)
     {
       _lcdManager->clearLcd();
       _soundManager->setPlayMusic(true);

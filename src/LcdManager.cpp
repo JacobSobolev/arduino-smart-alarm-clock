@@ -135,5 +135,29 @@ void LcdManager::setBlink(boolean enabled){
   else {
     _lcd->noBlink();
   }
+}
 
+eTmElementType LcdManager::getTmElementByIndex(int index)
+{
+  eTmElementType elementToReturn = eTmElementType::seconds;
+  if (index == 0){
+    elementToReturn = eTmElementType::hours;
+  }
+  else if (index == 1){
+    elementToReturn = eTmElementType::minutes;
+  }
+  else if (index == 2){
+    elementToReturn = eTmElementType::seconds;
+  }
+  else if (index == 3){
+    elementToReturn = eTmElementType::days;
+  }
+  else if (index == 4){
+    elementToReturn = eTmElementType::months;
+  }
+  else if (index == 5){
+    elementToReturn = eTmElementType::years;
+  }
+
+  return elementToReturn;
 }

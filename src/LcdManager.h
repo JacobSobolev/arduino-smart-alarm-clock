@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <Time.h>
+#include <eTmElementType.h>
 
 class LcdManager {
   private:
@@ -31,7 +32,8 @@ class LcdManager {
     void printAlarmTriggeredOnLcd();
     void setBlink(boolean enabled);
     void clearLcd();
-    
+    eTmElementType getTmElementByIndex(int index);
+
 };
 
 #endif
