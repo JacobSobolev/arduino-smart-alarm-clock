@@ -6,6 +6,7 @@
 #include <LiquidCrystal.h>
 #include <Time.h>
 #include <eTmElementType.h>
+#include <eSubmenuType.h>
 
 class LcdManager {
   private:
@@ -20,15 +21,16 @@ class LcdManager {
 
     LiquidCrystal* _lcd;
 
-    void setBlinkCursor(int index);
+    void setBlinkCursor(int index, eSubMenuType subMenuType);
 
   public:
     LcdManager();
     ~LcdManager();
     void init();
-    void printRealTimeOnLcd(tmElements_t tm, boolean alarmSet);
-    void printInsideMenuWithClock(tmElements_t tm, const char* str1,const char* str2, int menuIndex);
+    void printRealTimeOnLcd(tmElements_t tm, bool alarmSet, bool alarmLight);
     void printMenuTextOnLcd(const char* str);
+    void printInsideMenuWithClock(tmElements_t tm, const char* str1,const char* str2, int menuIndex);
+    void printInsideMenuLight(int currentValue, int alarmValue, int menuIndex);
     void printAlarmTriggeredOnLcd();
     void setBlink(boolean enabled);
     void clearLcd();

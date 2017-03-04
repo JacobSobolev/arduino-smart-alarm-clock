@@ -19,7 +19,7 @@ void Clock::setTimeElement(time_t time, eClockElementType elementClock)
   } else if (elementClock == eClockElementType::timeToSet)
   {
     breakTime(time, _timeToSet);
-  } else if (elementClock == eClockElementType::timeToSet){
+  } else if (elementClock == eClockElementType::timeToAlarm){
     breakTime(time, _timeToAlarm);
   }
 }
@@ -31,7 +31,7 @@ tmElements_t Clock::getTimeElement(eClockElementType elementClock){
   } else if (elementClock == eClockElementType::timeToSet)
   {
     tmToReturn = _timeToSet;
-  } else if (elementClock == eClockElementType::timeToSet){
+  } else if (elementClock == eClockElementType::timeToAlarm){
     tmToReturn = _timeToAlarm;
   }
 
@@ -46,7 +46,7 @@ void Clock::dtCurrentTimeField(int dt, eClockElementType elementClock, eTmElemen
   } else if (elementClock == eClockElementType::timeToSet)
   {
     tm = _timeToSet;
-  } else if (elementClock == eClockElementType::timeToSet){
+  } else if (elementClock == eClockElementType::timeToAlarm){
     tm = _timeToAlarm;
   }
 
@@ -117,6 +117,15 @@ void Clock::dtCurrentTimeField(int dt, eClockElementType elementClock, eTmElemen
   }
   else if (elementTime == eTmElementType::years){
     tm.Year += dt;
+  }
+
+  if (elementClock == eClockElementType::currentTime){
+    _timeCurrent = tm;
+  } else if (elementClock == eClockElementType::timeToSet)
+  {
+    _timeToSet = tm;
+  } else if (elementClock == eClockElementType::timeToAlarm){
+     _timeToAlarm = tm;
   }
 }
 

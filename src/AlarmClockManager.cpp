@@ -2,28 +2,29 @@
 
 
 AlarmClockManager::AlarmClockManager()
-: _menuSize(3), _timeToResetToDefualtMenu(50),
-_menuNumberIterations1(0), _menuNumberIterations2(6), _menuNumberIterations3(3),
-_menuName1("Menu 1"), _menuName2("Set Time"), _menuName3("Set Alarm")
-
+: _menuSize(4), _timeToResetToDefualtMenu(50),
+_menuNumberIterations1(0), _menuNumberIterations2(6), _menuNumberIterations3(3), _menuNumberIterations4(1),
+_menuName1("Menu 1"), _menuName2("Set Time"), _menuName3("Set Alarm"),_menuName4("Set Light")
 {
   _timeFromLastInput = 0;
   _insideMenu = false;
   _insideMenuIndex = 0;
   _alarmTriggered = false;
   _alarmSet = false;
-
-  _lcdManager = new LcdManager();
+  _alarmLightSet = false;
 
   _menu = new Menu(_menuSize);
   _menu->addItemToMenu(0, _menuName1, _menuNumberIterations1);
   _menu->addItemToMenu(1, _menuName2, _menuNumberIterations2);
   _menu->addItemToMenu(2, _menuName3, _menuNumberIterations3);
+  _menu->addItemToMenu(3, _menuName4, _menuNumberIterations4);
 
+
+  _lcdManager = new LcdManager();
   _buttonsManager = new ButtonsManager();
-
   _soundManager = new SoundManager();
   _clock = new Clock();
+  _lightManager = new LightManager();
 }
 
 AlarmClockManager::~AlarmClockManager()
@@ -35,19 +36,19 @@ void AlarmClockManager::init()
   _buttonsManager->initAll();
   _soundManager->init();
   _lcdManager->init();
-  setSyncProvider(RTC.get);
-
+  _clock->init();
+  _lightManager->init();
 }
 
 void AlarmClockManager::printCurrentMenu()
 {
 
-  if (!_alarmTriggered){
+  if (!_alarmTriggered ){
     if (_menu->getCurrentIndex() == 0){
       if(timeStatus() == timeSet) {
         _clock->setTimeElement(now(), eClockElementType::currentTime);
         tmElements_t tm = _clock->getTimeElement(eClockElementType::currentTime);
-        _lcdManager->printRealTimeOnLcd(tm, _alarmSet);
+        _lcdManager->printRealTimeOnLcd(tm, _alarmSet, _alarmLightSet);
       }
     } else {
       if (_insideMenu){
@@ -60,9 +61,12 @@ void AlarmClockManager::printCurrentMenu()
           }
           else if (_menu->getCurrentIndex() == 2){
             if(timeStatus() == timeSet) {
-              tmElements_t tm = _clock->getTimeElement(eClockElementType::timeToSet);
+              tmElements_t tm = _clock->getTimeElement(eClockElementType::timeToAlarm);
               _lcdManager->printInsideMenuWithClock(tm, "Set","Alarm",  _insideMenuIndex);
             }
+          }
+          else if (_menu->getCurrentIndex() == 3){
+            _lcdManager->printInsideMenuLight(_lightManager->getCurrentValue(),_lightManager->getAlarmValue(),_insideMenuIndex);
           }
       }
       else{
@@ -87,20 +91,20 @@ void AlarmClockManager::handleButtonsInput()
       if (!_insideMenu){
         _menu->moveIndexUp();
         _timeFromLastInput = 0;
-
         _lcdManager->clearLcd();
       }
       else
       {
         if (_menu->getCurrentIndex() == 1)
         {
-          // incCurrentTimeField(_timeToSet);
           _clock->dtCurrentTimeField(1, eClockElementType::timeToSet, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         } else if (_menu->getCurrentIndex() == 2)
         {
-          // incCurrentTimeField(_timeToAlarm);
-          // _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, eTmElementType elementTime);
           _clock->dtCurrentTimeField(1, eClockElementType::timeToAlarm, _lcdManager->getTmElementByIndex(_insideMenuIndex));
+        }
+        else if (_menu->getCurrentIndex() == 3)
+        {
+          _lightManager->addToAlarmValue(10);
         }
       }
     }
@@ -115,12 +119,14 @@ void AlarmClockManager::handleButtonsInput()
       {
         if (_menu->getCurrentIndex() == 1)
         {
-          // decCurrentTimeField(_timeToSet);
           _clock->dtCurrentTimeField(-1, eClockElementType::timeToSet, _lcdManager->getTmElementByIndex(_insideMenuIndex));
         } else if (_menu->getCurrentIndex() == 2)
         {
-          // decCurrentTimeField(_timeToAlarm);
           _clock->dtCurrentTimeField(-1, eClockElementType::timeToAlarm, _lcdManager->getTmElementByIndex(_insideMenuIndex));
+        }
+        else if (_menu->getCurrentIndex() == 3)
+        {
+          _lightManager->addToAlarmValue(-10);
         }
       }
     }
@@ -129,7 +135,6 @@ void AlarmClockManager::handleButtonsInput()
         if (!_insideMenu){
           _insideMenu = true;
           _insideMenuIndex = 0;
-          // breakTime(now(), _timeToSet);
           _clock->setTimeElement(now(), eClockElementType::timeToSet);
           _lcdManager->clearLcd();
           _lcdManager->setBlink(true);
@@ -142,10 +147,21 @@ void AlarmClockManager::handleButtonsInput()
         if (!_insideMenu){
           _insideMenu = true;
           _insideMenuIndex = 0;
-          // breakTime(now(), _timeToAlarm);
           _clock->setTimeElement(now(), eClockElementType::timeToAlarm);
           _lcdManager->clearLcd();
           _lcdManager->setBlink(true);
+        }
+        else {
+          moveToNextIndexInsideMenu();
+        }
+      }
+      else if (_menu->getCurrentIndex() == 3){
+        if (!_insideMenu){
+          _insideMenu = true;
+          _insideMenuIndex = 0;
+          _lcdManager->clearLcd();
+          _lcdManager->setBlink(true);
+          _lightManager->setAlarmValue(_lightManager->getCurrentValue());
         }
         else {
           moveToNextIndexInsideMenu();
@@ -202,125 +218,10 @@ void AlarmClockManager::preformMenuAction()
     }
     else if (_menu->getCurrentIndex() == 2){
       _alarmSet = true;
+    } else if (_menu->getCurrentIndex() == 3){
+      _alarmLightSet = true;
     }
 }
-
-// void AlarmClockManager::incCurrentTimeField(tmElements_t &tm)
-// {
-//   if (_insideMenuIndex == 0){
-//     tm.Hour ++;
-//     if (tm.Hour  == 24){
-//       tm.Hour = 0;
-//     }
-//   }
-//   else if (_insideMenuIndex == 1){
-//     tm.Minute ++;
-//     if (tm.Minute == 60){
-//       tm.Minute = 0;
-//     }
-//   }
-//   else if (_insideMenuIndex == 2){
-//     tm.Second ++;
-//     if (tm.Second == 60){
-//       tm.Second = 0;
-//     }
-//   }
-//   else if (_insideMenuIndex == 3){
-//     tm.Day ++;
-//     if (tm.Month == 2){
-//       if (tm.Year % 4 == 0 && tm.Day  == 30){
-//         tm.Day = 1;
-//       }
-//       else if (tm.Day  == 29){
-//         tm.Day = 1;
-//       }
-//     }
-//     else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
-//     && tm.Day  == 31){
-//       tm.Day = 1;
-//     } else if ( tm.Day == 32){
-//       tm.Day = 1;
-//     }
-//   }
-//   else if (_insideMenuIndex == 4){
-//     tm.Month ++;
-//     if (tm.Month == 13){
-//       tm.Month = 1;
-//     }
-//   }
-//   else if (_insideMenuIndex == 5){
-//     tm.Year ++;
-//   }
-// }
-//
-// void AlarmClockManager::decCurrentTimeField(tmElements_t &tm)
-// {
-//
-//   if (_insideMenuIndex == 0){
-//     if (tm.Hour  == 0){
-//       tm.Hour = 23;
-//     }
-//     else
-//     {
-//       tm.Hour --;
-//     }
-//   }
-//   else if (_insideMenuIndex == 1){
-//
-//     if (tm.Minute == 0){
-//       tm.Minute = 59;
-//     }
-//     else
-//     {
-//       tm.Minute --;
-//     }
-//   }
-//   else if (_insideMenuIndex == 2){
-//
-//     if (tm.Second == 0){
-//       tm.Second = 59;
-//     }
-//     else
-//     {
-//       tm.Second --;
-//     }
-//   }
-//   else if (_insideMenuIndex == 3){
-//     if (tm.Month == 2){
-//       if (tm.Year % 4 == 0 && tm.Day == 1){
-//         tm.Day = 29;
-//       }
-//       else if (tm.Day  == 1){
-//         tm.Day = 28;
-//       }
-//       else{
-//         tm.Day --;
-//       }
-//     }
-//     else if (((tm.Month == 4) || (tm.Month == 6) || (tm.Month == 9) || (tm.Month == 11))
-//     && tm.Day  == 1){
-//       tm.Day = 30;
-//     } else if ( tm.Day == 1){
-//       tm.Day = 31;
-//     }
-//     else{
-//       tm.Day --;
-//     }
-//   }
-//   else if (_insideMenuIndex == 4){
-//     if (tm.Month == 1){
-//       tm.Month = 12;
-//     }
-//     else
-//     {
-//       tm.Month --;
-//     }
-//   }
-//   else if (_insideMenuIndex == 5){
-//     tm.Year--;
-//   }
-// }
-//
 
 void AlarmClockManager::playAlarm()
 {
@@ -329,17 +230,33 @@ void AlarmClockManager::playAlarm()
 
 void AlarmClockManager::checkAlarm()
 {
-  if ( _alarmSet && !_alarmTriggered ) {
-    tmElements_t tmCurrentTime = _clock->getTimeElement(eClockElementType::currentTime);
-    tmElements_t tmAlarmTime = _clock->getTimeElement(eClockElementType::timeToAlarm);
-    if (tmCurrentTime.Hour == tmAlarmTime.Hour &&
-      tmCurrentTime.Minute == tmAlarmTime.Minute &&
-      tmCurrentTime.Second >= tmAlarmTime.Second)
-    {
-      _lcdManager->clearLcd();
-      _soundManager->setPlayMusic(true);
-      _alarmTriggered = true;
-      _alarmSet = false;
+  if ( !_alarmTriggered ) {
+    if (_alarmSet){
+      tmElements_t tmCurrentTime = _clock->getTimeElement(eClockElementType::currentTime);
+      tmElements_t tmAlarmTime = _clock->getTimeElement(eClockElementType::timeToAlarm);
+      if (tmCurrentTime.Hour == tmAlarmTime.Hour &&
+        tmCurrentTime.Minute == tmAlarmTime.Minute &&
+        tmCurrentTime.Second >= tmAlarmTime.Second)
+      {
+        _lcdManager->clearLcd();
+        _soundManager->setPlayMusic(true);
+        _alarmTriggered = true;
+        _alarmSet = false;
+      }
+    } else if (_alarmLightSet){
+      if (_lightManager->isAlarmValuePassed()){
+        _lcdManager->clearLcd();
+        _soundManager->setPlayMusic(true);
+        _alarmTriggered = true;
+        _alarmLightSet = false;
+      }
     }
+
   }
+}
+
+void AlarmClockManager::updateLightValue()
+{
+  _lightManager->updateLightValue();
+  // Serial.println(_lightManager->getCurrentValue());
 }

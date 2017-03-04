@@ -13,6 +13,7 @@
 #include <Clock.h>
 #include <eClockElementType.h>
 #include <eTmElementType.h>
+#include <LightManager.h>
 
 class AlarmClockManager {
 private:
@@ -21,30 +22,30 @@ private:
   const int _menuNumberIterations1;
   const int _menuNumberIterations2;
   const int _menuNumberIterations3;
+  const int _menuNumberIterations4;
   const char* _menuName1;
   const char* _menuName2;
   const char* _menuName3;
+  const char* _menuName4;
 
 
   int _timeFromLastInput;
-  boolean _insideMenu;
+  bool _insideMenu;
   int _insideMenuIndex;
-  boolean _alarmTriggered;
-  boolean _alarmSet;
+  bool _alarmTriggered;
+  bool _alarmSet;
+  bool _alarmLightSet;
+
 
   Menu* _menu;
   ButtonsManager* _buttonsManager;
   SoundManager* _soundManager;
   LcdManager* _lcdManager;
   Clock* _clock;
-  // tmElements_t _timeToSet;
-  // tmElements_t _timeCurrent;
-  // tmElements_t _timeToAlarm;
+  LightManager* _lightManager;
 
   void moveToNextIndexInsideMenu();
   void preformMenuAction();
-  // void decCurrentTimeField(tmElements_t &tm);
-  // void incCurrentTimeField(tmElements_t &tm);
 
 public:
   AlarmClockManager();
@@ -54,7 +55,7 @@ public:
   void handleButtonsInput();
   void playAlarm();
   void checkAlarm();
-
+  void updateLightValue();
 };
 
 #endif
