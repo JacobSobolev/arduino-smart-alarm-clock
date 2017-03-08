@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <DS3232RTC.h>    //http://github.com/JChristensen/DS3232RTC
-#include <Time.h>         //http://www.arduino.cc/playground/Code/Time
+#include <DS3232RTC.h>
+#include <Time.h>
 #include <Menu.h>
 #include <ButtonsManager.h>
 #include <SoundManager.h>
